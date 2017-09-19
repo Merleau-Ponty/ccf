@@ -1,0 +1,110 @@
+h1, h2
+{
+    font-family: 'Roboto Thin', sans-serif;
+}
+
+body .row .row .input-field.col.s6
+{
+    margin-left: 25% !important;
+}
+
+nav > div > a > img
+{
+    width: auto;
+    height : auto;
+    max-height: 100%;
+    max-width: 100%;
+}
+
+nav > div > a
+{
+    height: 100%;
+}
+
+.p-index
+{
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.gras
+{
+    font-weight: bolder;
+}
+
+.centrer
+{
+    text-align: center;
+}
+
+.champ
+{
+    width: 50% !important;
+    margin-left: 25% !important;
+}
+
+.champ-form-imbriques
+{
+    width: 50%;
+}
+
+.select-label
+{
+    margin-left: 24.7%;
+}
+
+.info-ccf
+{
+    text-align: center;
+    width: 40%;
+    margin-left: 30%;
+    color: white;
+}
+
+.collapsible-header
+{
+    color: white;
+    background-color: #00897b;
+}
+
+.collapsible-body
+{
+    color: black;
+    background-color: white;
+}
+
+.display
+{
+    display: none;
+}
+
+/* -- Couleurs validation -- */
+.val
+{
+    background-color: #8ec790;
+    border-radius: 0; 
+}
+
+.non-val
+{
+    background-color: #fcaeae;
+    border-radius: 0;
+}
+
+.bordure
+{
+    border-bottom: 1px solid white;
+}
+
+/* --- Footer collé en bas de page --- */
+body
+{
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.main
+{
+    flex: 1;
+}
