@@ -1,49 +1,82 @@
-<?php session_start();
-include("../include/header.php") ?>
+<?php
+session_start();
+
+// Initialisation des variables
+$message = "";
+
+#================== Header et Connection base de données ==================
+include("../include/header.php");
+
+#================== Si le formulaire à été envoyé ==================
+if (isset($_POST["username"])) {
+    $_SESSION['login'] = $_POST["username"];
+    include ('../include/BDD.php');
+    include('verification_elev.php');
+}
+?>
+
 
 <body>
     <div class="main">
-        <!-- ============================== Contenu ================================ -->
-        <?php include("../include/nav.php") ?>
+        <!-- =================== Menu =================== -->
+        <?php include("../include/nav.php"); ?>
 
-        <div class="centrer">
-            <div>
-                <h2 class="centrer">Bienvenue</h2>
-                <br/>
-                <?php
-                if ($_SESSION['ccf_amj'] <= $_SESSION['current_amj']) {
+        <!-- =================== Authentitification =================== -->
+        <center><h2>Authentification</h2></center>
+        <div class="row">
+            <form method="post" action="eleves.php" name="loginform" id="loginform" class="col s12">
 
-                    echo"<h2 class=\'centrer\'>Les inscriptions sont terminées</h2>";
-                } else {
-                    //avant la course
-                    echo "<a href='inscription_eleve.php'><button class='waves-effect waves-light btn' >S'inscrire à la course</button></a>";
-                }
-                ?>
+                <!-- =================== Nom d'utilisateur et Mot de passe =================== -->    
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input type="text" value="" id="username" name="username">
+                        <label for="username">Nom d'utilisateur</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s6 marge-input">
+                        <input type="password" value="" id="password" name="password">
+                        <label for="password">Mot de passe</label>
+                    </div>
+                </div>
 
-            </div>
-            <br/>
-            <div>
-                <a href='autorisationparents.pdf'><button name="telechargement" class="waves-effect waves-light btn">Téléchargement autorisation parentale</button></a> 
-            </div>
+                <!-- =================== Bouton connexion =================== -->
+                <div class="row">
+                    <center>
+                        <button onclick="document.getElementById('loginform').submit()" name="Connexion" class="waves-effect waves-light btn">Connexion</button>
+                    </center>
+                </div>
+            </form>
+        </div>
+
+        <!-- =================== Message en cas de mauvaise identification =================== -->
+        <div>
+            <?= $message ?>
         </div>
     </div>
 
-    <!-- ============================== Footer ================================= -->
-<?php include("../include/footer.php") ?>
+
+    <!-- =================== Footer =================== -->
+    <?php include('../include/footer.php') ?>
+
 
     <script type='text/javascript'>
         // Gestion des parties de l'application - espace élève
-        var d = new Date();
-        courante = new Date(d.getFullYear(), d.getMonth(), d.getDate());
         eval(sessionStorage.ccf);
         eval(sessionStorage.courante);
-        console.log('courante : ' + courante);
-        console.log('ccf : ' + ccf);
-        if (courante > ccf)
-        {
-            //$('div.centrer').html('<h2 class=\'centrer\'>Les inscriptions sont terminées</p>');
-            $('div.centrer').html('<h2 class=\'centrer\'>La course est finie</h2>\n<p class=\'centrer\'>Vous pouvez consulter les résultats, s\'ils sont disponibles</p>');
+
+        // Après la course
+        if (courante > ccf) {
+            $('h2').empty();
+            $('div.row:first').html('<h2 class=\'centrer\'>La course est finie</h2>\n<p class=\'centrer\'>Vous pouvez consulter les résultats, s\'ils sont disponibles</p>');
+        }
+        // Jour de la course
+        else if (courante.getTime() == ccf.getTime()) {
+            $('h2').empty();
+            $('div.row:first').html('<h2 class=\'centrer\'>La course est aujourd\'hui</h2>\n<p class=\'centrer\'>N\'oubliez pas d\'y participer si vous vous êtes inscrit</p>');
         }
 
-
+        // CSS
+        $('label').css('margin-left', '12px');
+        $('form > div').width('450px');
     </script>

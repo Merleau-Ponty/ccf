@@ -1,16 +1,28 @@
 <?php
-if (!isset($_SESSION)) {
-    session_start();
-}
+session_start();
+
 // PHP pour l'Ajax 
 if (isset($_POST['ajax'])) {
     $json = array("date_courante" => $_SESSION['current_date'], "date_ccf" => $_SESSION['ccf']);
     echo json_encode($json);
     exit;
 }
+
+//Gestion de la date pour les différentes parties de l'application
+$_SESSION['current_date'] = date('d/m/Y');
+$_SESSION['ccf'] = file_get_contents('include/date_ccf.dat');
+$dateccf = DateTime::createFromFormat('d/m/Y', $_SESSION['ccf']);
+$datejour = DateTime::createFromFormat('d/m/Y', $_SESSION['current_date']);
+
+// Si la date respecte le format la méthode createFromFormat renvoie un objet de type DateTime et peut disposer //de ses méthodes : la méthode format renvoie la date sous un format différent
+$_SESSION['ccf_amj'] = $dateccf->format('Y-m-d');
+$_SESSION['current_amj'] = $datejour->format('Y-m-d');
 ?>
+
+
 <!DOCTYPE html>
 <html lang="fr">
+    <!-- =================== Header =================== -->
     <head>
         <meta content="text/html" charset="utf-8" http-equiv="Content-type" />
         <title>Accueil</title>
@@ -25,25 +37,12 @@ if (isset($_POST['ajax'])) {
         <!-- Importation du JS -->
         <script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
         <script type="text/javascript" src="js/materialize.min.js"></script>
-
-        <!-- Gestion de la date pour les différentes parties de l'application -->
-<?php
-//date_default_timezone_set('Europe/Paris');
-$_SESSION['current_date'] = date('d/m/Y');
-$_SESSION['ccf'] = file_get_contents('include/date_ccf.dat');
-$dateccf = DateTime::createFromFormat('d/m/Y', $_SESSION['ccf']);
-$datejour = DateTime::createFromFormat('d/m/Y', $_SESSION['current_date']);
-
-//si la date respecte le format la méthode createFromFormat renvoie un objet de type DateTime et peut disposer //de ses méthodes : la méthode format renvoie la date sous un format différent
-
-$_SESSION['ccf_amj'] = $dateccf->format('Y-m-d');
-$_SESSION['current_amj'] = $datejour->format('Y-m-d');
-//echo $_SESSION['ccf_amj'];
-//echo $_SESSION['current_amj'];
-?>
-
     </head>
+
+    <!-- =================== Contenu =================== -->
     <body>
+
+        <!-- =================== Menu =================== -->
         <section id="content">
             <div class="navbar-fixed">
                 <nav>
@@ -62,7 +61,6 @@ $_SESSION['current_amj'] = $datejour->format('Y-m-d');
                         </ul>
 
                         <!-- Menu mobile -->
-
                         <ul class="side-nav" id="mobile-demo">
                             <li><a href="./index.php">Accueil</a></li>
                             <li><a href="./eleve/eleves.php">Espace élèves</a></li>
@@ -76,18 +74,20 @@ $_SESSION['current_amj'] = $datejour->format('Y-m-d');
             </div>
         </section>
 
-        <br/>
+        <!-- =================== Etat de la course =================== -->
         <div class="col s12 m2 info-ccf z-depth-2 card-panel green" id="info-bulle">
             C'est le jour de la course, n'oubliez pas !
         </div>
 
-        <!-- ============================== Modif pour git ================================ -->
+        <!-- =================== Bouton pour aller au resultat =================== -->
         <form action="resultat/tabresultat.php" id="boutonResultats">
-            <center><button class="waves-effect waves-light btn" id='liste-res'>Liste des résultats</button></center>
+            <center>
+                <button class="waves-effect waves-light btn" id='liste-res'>Liste des résultats</button>
+            </center>
+            <br>
         </form>
 
-        <!-- ============================== Slider ================================ -->
-        <br/><br/>
+        <!-- =================== Slider =================== -->
         <div class="slider">
             <ul class="slides">
                 <li>
@@ -100,9 +100,8 @@ $_SESSION['current_amj'] = $datejour->format('Y-m-d');
             </ul>
         </div><br/>
 
-
+        <!-- =================== Texte d'explication =================== -->
         <div class="container_24 top-1">
-
             <center><h2>A vos marques, prêts ? Participez !</h2></center>
             <p align="justify" class="p-index">Tu veux te mobiliser avec le lycée Merleau Ponty contre la faim dans le monde ? <br>
                 L'année dernière, ce sont près de 265 000 élèves qui se sont mobilisés en France et dans le monde contre le fléau de la faim, et la région Poitou-Charentes a été celle qui a récolté le plus de dons.
@@ -119,32 +118,26 @@ $_SESSION['current_amj'] = $datejour->format('Y-m-d');
             <br/>
         </div> 
 
-        <!-- ============================== Footer ================================= -->
-<?php include "include/footer.php" ?>
 
         <script type='text/javascript'>
-            $(document).ready(function ()
-            {
+            $(document).ready(function () {
                 // Requête Ajax pour obtenir la date actuelle du serveur, et celle de la CCF
                 var ajax = true;
-                $.ajax(
-                        {
-                            url: 'index.php',
-                            //                url: 'index.php',
-                            type: 'POST',
-                            data: 'ajax=' + ajax,
-                            dataType: 'json',
-                            success: function (res) {
-                                gestionDates(res);
-                            },
-                            error: function () {
-                                alert("Erreur Ajax");
-                            }
-                        })
+                $.ajax({
+                    url: 'index.php',
+                    type: 'POST',
+                    data: 'ajax=' + ajax,
+                    dataType: 'json',
+                    success: function (res) {
+                        gestionDates(res);
+                    },
+                    error: function () {
+                        alert("Erreur Ajax");
+                    }
+                })
             });
 
-            function gestionDates(res)
-            {
+            function gestionDates(res) {
                 var d_ccf = res.date_ccf.split('/');
                 var d_courante = res.date_courante.split('/');
                 // Enregistrement des dates en variables de session JS
@@ -154,20 +147,19 @@ $_SESSION['current_amj'] = $datejour->format('Y-m-d');
                 eval(sessionStorage.ccf);
                 eval(sessionStorage.courante);
                 // Modification de la bulle d'information selon la date
-                if (courante < ccf)
-                {
-                    //	$('#info-bulle').html('C\'est trop tard, les inscriptions ne sont plus disponibles');
+                if (courante < ccf) {
                     $('#info-bulle').html('La course n\'est pas commencée, les inscriptions sont disponibles');
                     $('#liste-res').hide();
-                } else if (courante >= ccf)
-                {
-                    $('#info-bulle').html('Vous pouvez consultez les résultats');
-                } else
-                {
+                } else if (courante > ccf) {
+                    $('#info-bulle').html('La course est finie, vous pouvez consultez les résultats');
+                } else {
                     $('#liste-res').hide();
                 }
             }
             ;
         </script>
-    </body>
-</html>
+
+        <!-- =================== Footer =================== -->
+        <?php include "include/footer.php" ?>
+
+

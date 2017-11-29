@@ -11,7 +11,7 @@
                     <li><a href="../eleve/eleves.php">Espace élèves</a></li>
                     <!-- <li><a href="../professeur/professeurs.php">Espace professeurs</a></li>-->
                     <li><a class="dropdown-button" href="../professeur/professeurs.php" data-activates="dropdown1">Espace professeurs<i class="mdi-navigation-arrow-drop-down right"></i></a></li>
-                    
+
                     <!-- sous-menu desktop -->
                     <ul id='dropdown1' class='dropdown-content'>
                         <li><a href="../professeur/inscription_prof.php">Inscription</a></li>
@@ -21,7 +21,7 @@
                         <li><a href='../professeur/changement_date.php'>Changement date CCF</a></li>
                     </ul>
                     <!-- fin sous-menu desktop -->
-                    
+
                     <li><a href="../organisateur/organisateurs.php">Espace organisateurs</a></li>
                     <li><a href="../resultat/espaceresultat.php">Résultats</a></li>
                 </ul>
@@ -30,8 +30,8 @@
                 <ul class="side-nav" id="mobile-demo">
                     <li><a href="../index.php">Accueil</a></li>
                     <li><a href="../eleve/eleves.php">Espace élèves</a></li>
-                    <!--                    <li><a href="../professeur/professeurs.php">Espace professeurs</a></li>-->
-                    
+                    <!--<li><a href="../professeur/professeurs.php">Espace professeurs</a></li>-->
+
                     <!-- sous-menu mobile -->
                     <li class="no-padding">
                         <ul class="collapsible collapsible-accordion">
@@ -49,7 +49,7 @@
                         </ul>
                     </li>
                     <!-- fin sous-menu mobile -->
-                    
+
                     <li><a href="../organisateur/organisateurs.php">Espace organisateurs</a></li>
                     <li><a href="../resultat/espaceresultat.php">Résultats</a></li>
                 </ul>

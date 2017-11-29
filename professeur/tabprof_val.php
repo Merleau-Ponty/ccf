@@ -27,6 +27,8 @@ $login = strtoupper($login);
 
                     // on récupère toutes les checkbox cochées
                     $checkboxes = isset($_POST['inscription']) ? $_POST['inscription'] : array();
+                    $checkboxes2 = isset($_POST['desinscription']) ? $_POST['desinscription'] : array();
+
                     // Initalisation des variables pour éviter qu'elles deviennent locales lors de leur déclaration
                     $requete = '';
                     $requete2 = '';
@@ -35,16 +37,24 @@ $login = strtoupper($login);
                     foreach ($checkboxes as $value) {
                         $requete = "UPDATE PARTICIPANTS set INSCRIT = 'O', AUTORISATION = 'O', DROIT_IMAGE = 'O', DOSSIER = 'O' where NO_PARTICIPANT = '" . $value . "'";
                         $inscription = $connexion->insert($requete);
+
+                        //echo $value . " / ";
                     }
 
+                    foreach ($checkboxes2 as $value) {
+                        $requete2 = "UPDATE PARTICIPANTS set INSCRIT = 'N', AUTORISATION = '', DROIT_IMAGE = '', DOSSIER = '' where NO_PARTICIPANT = '" . $value . "'";
+                        $desinscription = $connexion->insert($requete2);
 
-                    $requete = "select NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE, PARTICIPANTS.INSCRIT,AUTORISATION,DROIT_IMAGE from PARTICIPANTS
+                        //echo $value . " / ";
+                    }
+
+                    $requete = "SELECT NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE, PARTICIPANTS.INSCRIT,AUTORISATION,DROIT_IMAGE from PARTICIPANTS
 									inner join CLASSE on PARTICIPANTS.ID_CLASSE = CLASSE.ID_CLASSE
 									inner join PROFESSEURS on CLASSE.LOGIN = PROFESSEURS.LOGIN
 									where CLASSE.LOGIN='$login'
                                     and INSCRIT IN ('O','V','N')
 									order by PARTICIPANTS.ID_CLASSE , PARTICIPANTS.NOM";
-                    $requete2 = "select NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE, PARTICIPANTS.INSCRIT,AUTORISATION,DROIT_IMAGE 
+                    $requete2 = "SELECT NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE, PARTICIPANTS.INSCRIT,AUTORISATION,DROIT_IMAGE 
                                                                         from PARTICIPANTS
 									inner join CLASSE on PARTICIPANTS.ID_CLASSE = CLASSE.ID_CLASSE
 									inner join PROFESSEURS on CLASSE.LOGIN = PROFESSEURS.LOGIN
@@ -69,7 +79,7 @@ $login = strtoupper($login);
                         $sauveclasse = $resultats[0]['ID_CLASSE'];
                         // Pour les terminales
                         if ($sauveclasse == 'TERM') {
-                            $requete = "select NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE,INSCRIT,AUTORISATION,DROIT_IMAGE from PARTICIPANTS
+                            $requete = "SELECT NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE,INSCRIT,AUTORISATION,DROIT_IMAGE from PARTICIPANTS
                                         inner join CLASSE on PARTICIPANTS.ID_CLASSE = CLASSE.ID_CLASSE
                                         inner join PROFESSEURS on CLASSE.LOGIN = PROFESSEURS.LOGIN
                                         where CLASSE.LOGIN='$login'  
@@ -94,6 +104,7 @@ $login = strtoupper($login);
                                             <th>Autorisation</th>
                                             <th>Droit à l'image</th>
                                             <th>Validation</th>
+                                            <th>Désinscription</th>
                                         </tr>
                                     </thead>
                                 <tbody>";
@@ -115,13 +126,14 @@ $login = strtoupper($login);
                                             <th>Autorisation</th>
                                             <th>Droit à l'image</th>
                                             <th>Validation</th>
+                                            <th>Désinscription</th>
                                         </tr>
                                     </thead>
                                     <tbody>";
                             }
                             $checked = ($tab_eleve['INSCRIT'] == 'O') ? "disabled checked" : "";
                             $color = ($tab_eleve['INSCRIT'] == 'O') ? "class='val'" : (($tab_eleve['INSCRIT'] == 'V') ? "class='non-val'" : "");
-                            echo "<tr><td $color>", $tab_eleve['NOM'], "</td><td $color>", $tab_eleve['PRENOM'], "</td><td $color>", $tab_eleve['ID_CLASSE'], "</td><td $color>", $tab_eleve['INSCRIT'], "</td><td $color>", $tab_eleve['AUTORISATION'], "</td><td $color>", $tab_eleve['DROIT_IMAGE'], "</td><td $color><input type='checkbox' class='filled-in' id='filled-in-box" . $cpt . "' name='inscription[]' value=" . $tab_eleve["NO_PARTICIPANT"] . " style='visibility:hidden' " . $checked . "><label for='filled-in-box" . $cpt . "'></label></td></tr>";
+                            echo "<tr><td $color>", $tab_eleve['NOM'], "</td><td $color>", $tab_eleve['PRENOM'], "</td><td $color>", $tab_eleve['ID_CLASSE'], "</td><td $color>", $tab_eleve['INSCRIT'], "</td><td $color>", $tab_eleve['AUTORISATION'], "</td><td $color>", $tab_eleve['DROIT_IMAGE'], "</td><td $color><input type='checkbox' class='filled-in' id='filled-in-box" . $cpt . "' name='inscription[]' value=" . $tab_eleve["NO_PARTICIPANT"] . " style='visibility:hidden' " . $checked . "><label for='filled-in-box" . $cpt . "'></label></td><td $color><input type='checkbox' class='filled-in' id='filled-in-box" . ($cpt + 2000) . "' name='desinscription[]' value=" . $tab_eleve["NO_PARTICIPANT"] . " style='visibility:hidden'><label for='filled-in-box" . ($cpt + 2000) . "'></label></td></tr>";
                         }
                         echo "</tbody></table></li>";
                     }
@@ -138,8 +150,9 @@ $login = strtoupper($login);
                                 $i++;
                             }
                             $checked = ($tab_eleve['INSCRIT'] == 'O') ? "disabled checked" : "";
+                            $checked2 = ($tab_eleve['INSCRIT'] == 'O') ? "" : "";
                             $color = ($tab_eleve['INSCRIT'] == 'O') ? "class='val'" : (($tab_eleve['INSCRIT'] == 'V') ? "class='non-val'" : "");
-                            $tabTri[$i][$cpt] = "<tr><td $color>" . $tab_eleve['NOM'] . "</td><td $color>" . $tab_eleve['PRENOM'] . "</td><td $color>" . $tab_eleve['ID_CLASSE'] . "</td><td $color>" . $tab_eleve['INSCRIT'] . "</td><td $color>" . $tab_eleve['AUTORISATION'] . "</td><td $color>" . $tab_eleve['DROIT_IMAGE'] . "</td><td $color><input type='checkbox' class='filled-in' id='filled-in-box" . $cpt . "' name='inscription[]' value=" . $tab_eleve["NO_PARTICIPANT"] . " style='visibility:hidden' " . $checked . "><label for='filled-in-box" . $cpt . "'></label></td></tr>";
+                            $tabTri[$i][$cpt] = "<tr><td $color>" . $tab_eleve['NOM'] . "</td><td $color>" . $tab_eleve['PRENOM'] . "</td><td $color>" . $tab_eleve['ID_CLASSE'] . "</td><td $color>" . $tab_eleve['INSCRIT'] . "</td><td $color>" . $tab_eleve['AUTORISATION'] . "</td><td $color>" . $tab_eleve['DROIT_IMAGE'] . "</td><td $color><input type='checkbox' class='filled-in' id='filled-in-box" . $cpt . "' name='inscription[]' value=" . $tab_eleve["NO_PARTICIPANT"] . " style='visibility:hidden' " . $checked . "><label for='filled-in-box" . ($cpt + 2000) . "'></label></td><td $color><input type='checkbox' class='filled-in' id='filled-in-box" . ($cpt + 2000) . "' name='desinscription[]' value=" . $tab_eleve["NO_PARTICIPANT"] . " style='visibility:hidden'><label for='filled-in-box" . $cpt . "'></label></td></tr>";
                             $cpt++;
                         }
                     }
@@ -187,7 +200,7 @@ $login = strtoupper($login);
             var cpt_ch = 0;
             var cpt_un = 0;
             var bout = $("button[name*='toutCocher']");
-            var sel = $("div.collapsible-body[style*='display: block'] input[type=checkbox]");
+            var sel = $("div.collapsible-body[style*='display: block'] input[name='inscription[]'");
             sel.each(function ()
             {
                 if (!$(this).is(':disabled'))
@@ -201,21 +214,21 @@ $login = strtoupper($login);
             var length = cpt_ch + cpt_un;
             if (cpt_ch == length)
             {
-                $("div.collapsible-body[style*='display: block'] input:checkbox:not(:disabled)").prop('checked', false);
+                $("div.collapsible-body[style*='display: block'] input[name='inscription[]']:not(:disabled)").prop('checked', false);
                 bout.html('Tout cocher');
             } else if (cpt_un == length)
             {
-                $("div.collapsible-body[style*='display: block'] input:checkbox:not(:disabled)").prop('checked', true);
+                $("div.collapsible-body[style*='display: block'] input[name='inscription[]']:not(:disabled)").prop('checked', true);
                 bout.html('Tout décocher');
             } else
             {
                 if (cpt_ch >= length / 2)
                 {
-                    $("div.collapsible-body[style*='display: block'] input:checkbox:not(:disabled)").prop('checked', true);
+                    $("div.collapsible-body[style*='display: block'] input[name='inscription[]']:not(:disabled)").prop('checked', true);
                     bout.html('Tout décocher');
                 } else
                 {
-                    $("div.collapsible-body[style*='display: block'] input:checkbox:not(:disabled)").prop('checked', false);
+                    $("div.collapsible-body[style*='display: block'] input[name='inscription[]']:not(:disabled)").prop('checked', false);
                     bout.html('Tout cocher');
                 }
             }
@@ -224,8 +237,8 @@ $login = strtoupper($login);
         // Réinitalise le texte du bouton de cochage - entrée du panneau
         $("div.collapsible-header").click(function ()
         {
-            var total = $(this).next().find("input:checkbox:not(:disabled)").length;
-            var coches = $(this).next().find("input:checkbox:not(:disabled):checked").length;
+            var total = $(this).next().find("input[name='inscription[]']:not(:disabled)").length;
+            var coches = $(this).next().find("input[name='inscription[]']:not(:disabled):checked").length;
             if (coches == total)
                 $("button[name*='toutCocher']").html('Tout décocher');
             else if (coches == 0)
@@ -236,9 +249,9 @@ $login = strtoupper($login);
                 $("button[name*='toutCocher']").html('Tout cocher');
             else
                 $("button[name*='toutCocher']").html('Tout décocher');
-            $(this).next().find("input:checkbox:not(:disabled)").change(function ()
+            $(this).next().find("input[name='inscription[]']:not(:disabled)").change(function ()
             {
-                var total = $(this).parents('tbody').find("input:checkbox:not(:disabled)").length;
+                var total = $(this).parents('tbody').find("input[name='inscription[]']:not(:disabled)").length;
                 var coches = $(this).parents('tbody').find("input:checkbox:not(:disabled):checked").length;
                 if (coches >= total / 2)
                     $("button[name*='toutCocher']").html('Tout cocher');
@@ -252,6 +265,7 @@ $login = strtoupper($login);
                     $("button[name*='toutCocher']").html('Tout décocher');
             });
         });
+
 
         // Permet de trier le tableau
         $("button[name='trier']").click(function ()

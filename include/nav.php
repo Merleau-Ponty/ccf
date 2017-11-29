@@ -16,7 +16,6 @@
                 </ul>
 
                 <!-- Menu mobile -->
-
                 <ul class="side-nav" id="mobile-demo">
                     <li><a href="../index.php">Accueil</a></li>
                     <li><a href="../eleve/eleves.php">Espace élèves</a></li>

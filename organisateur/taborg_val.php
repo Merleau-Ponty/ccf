@@ -1,181 +1,267 @@
 <?php
-//a destination des organisateurs
+#================== Header et Connection base de données ==================
+include("../include/header.php");
 include_once "../include/BDD.php";
 $connexion = new BDD('ccf');
-include("../include/header.php");
+
+
+#================== Si le login est dans l'URL (premier chargement de la page) ==================
 if (isset($_GET['login'])) {
     $login = $_GET['login'];
-} else {
+}
+#================== Il n'y a plus le login dans l'url alors on la mit dans un input pour le recuperer ================== 
+else {
     $login = $_POST['login'];
 }
-// on récupère toutes les checkbox cochées
+
+
+#================== Récupération des checkboxes qui ont été cocher ==================
+// Si le formulaire à été envoyer on recupere les checkboxes sinon c'est vide
 $checkboxes = isset($_POST['inscription']) ? $_POST['inscription'] : array();
 
+// Pour chaque checkboxes recupérée
 foreach ($checkboxes as $value) {
+    // Requête pour mettre a jour les informations de l'élève en t'en que validé
     $requete = "UPDATE PARTICIPANTS set INSCRIT = 'O', AUTORISATION = 'O', DROIT_IMAGE = 'O' where NO_PARTICIPANT = '" . $value . "'";
+
+    // Execution de la requête
     $inscription = $connexion->insert($requete);
 }
-?>
-
-<body>
-    <div class="main">
-        <header>
-        </header>
-
-<?php include("../include/nav.php") ?>
-
-        <div>
-            <br/>
 
 
-<?php
-// eleve inscrit
-$requete2 = "select count(*) as nbeleves from PARTICIPANTS where INSCRIT='O' or INSCRIT='V';";
+#================== Inscrit par classe ==================
+// Requête pour recupérer les classe ou il y a des inscrit
+$requete = "SELECT ID_CLASSE from PARTICIPANTS where INSCRIT='O' order by ID_CLASSE";
 
-$resultats2 = $connexion->select($requete2);
-$nbeleves = $resultats2[0]['nbeleves'];
-$requete2B = "select count(*) as nbeleves from PARTICIPANTS where INSCRIT='O';";
-
-$resultats2B = $connexion->select($requete2B);
-$nbelevesV = $resultats2B[0]['nbeleves'];
-$requete = "select NOM,PRENOM,ID_CLASSE,INSCRIT,AUTORISATION,DROIT_IMAGE from PARTICIPANTS where INSCRIT='O' order by ID_CLASSE,NOM";
-
+// Execution de la requête
 $resultats = $connexion->select($requete);
-if (isset($resultats[0])) {
-    $sauveclasse = $resultats[0]['ID_CLASSE'];
-    $sauveclasse2 = $resultats[0]['ID_CLASSE'];
-} else {
-    $sauveclasse = '';
-    $sauveclasse2 = '';
-}
-?>
 
-            <center>
-                <h1>Tableau récapitulatif du nombre d'inscrits</h1></center>
-            <form method="post" action="taborg_val.php?login=<?= $login ?>" id='form'>
-                <table class='centered'>
-                    <thead>
-                        <tr>
-                            <th>Classe</th>
-                            <th>Nombre d'inscrits</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-<?php
-echo "<tr><td><strong><center>$sauveclasse</center></strong></td> ";
-$requete5 = "select ID_CLASSE, count(NO_PARTICIPANT) as nbeleves2 from PARTICIPANTS where INSCRIT='O' and ID_CLASSE='$sauveclasse2' group by ID_CLASSE";
+// Affecttation de la classe dans une variable
+$sauveclasse = $resultats[0]['ID_CLASSE'];
+
+
+// Requête pour récuperer le nombre d'élève de la classe recuperer au dessus
+$requete5 = "SELECT ID_CLASSE, count(NO_PARTICIPANT) AS nbeleves2 FROM PARTICIPANTS WHERE INSCRIT='O' AND ID_CLASSE='$sauveclasse' GROUP BY ID_CLASSE";
+
+// Execution de la requête
 $resultats5 = $connexion->select($requete5);
-$nbeleves2 = 0;
-if (isset($resultats5[0])) {
-    $nbeleves2 = $resultats5[0]['nbeleves2'];
-}
-echo "<td><strong><center>$nbeleves2</center></td></tr>";
 
+// Affection du nombre d'élève dans une variable
+$nbeleves2 = $resultats5[0]['nbeleves2'];
+
+// Affichage de la classe et du nombre délève
+$table_nbparticipants = "
+                    <tr>
+                        <td>
+                            <strong>
+                                <center>
+                                    $sauveclasse
+                                </center>
+                            </strong>
+                        </td>
+                        <td>
+                            <strong>
+                                <center>
+                                    $nbeleves2
+                                </center>
+                            </strong>
+                        </td>
+                    </tr>";
+
+// Pour chaque classe
 foreach ($resultats as $tab_nbeleve) {
-    if ($tab_nbeleve['ID_CLASSE'] <> $sauveclasse2) {
-        $sauveclasse2 = $tab_nbeleve['ID_CLASSE'];
-        echo "<tr><td><strong><center>$sauveclasse2</center></strong></td> ";
-        $requete6 = "select ID_CLASSE,count(NO_PARTICIPANT) as nbeleves2 from PARTICIPANTS where INSCRIT='O' and ID_CLASSE='$sauveclasse2' group by ID_CLASSE";
-        $resultats6 = $connexion->select($requete6);
-        $nbeleves2 = $resultats6[0]['nbeleves2'];
-        echo "<td><strong><center>$nbeleves2</center></td></tr>";
+    // Si la classe est differente de la classe en cours
+    if ($tab_nbeleve['ID_CLASSE'] <> $sauveclasse) {
+        // Initialisation des variable
+        $sauveclasse = $tab_nbeleve['ID_CLASSE'];
+
+        // Requête pour récuperer le nombre d'élève de la classe recuperer au dessus
+        $requete5 = "SELECT ID_CLASSE, count(NO_PARTICIPANT) AS nbeleves2 FROM PARTICIPANTS WHERE INSCRIT='O' AND ID_CLASSE='$sauveclasse' GROUP BY ID_CLASSE";
+
+        // Execution de la requête
+        $resultats5 = $connexion->select($requete5);
+
+        // Affection du nombre d'élève dans une variable
+        $nbeleves2 = $resultats5[0]['nbeleves2'];
+
+        // Affichage de la classe et du nombre délève
+        $table_nbparticipants .= "
+                    <tr>
+                        <td>
+                            <strong>
+                                <center>
+                                    $sauveclasse
+                                </center>
+                            </strong>
+                        </td>
+                        <td>
+                            <strong>
+                                <center>
+                                    $nbeleves2
+                                </center>
+                            </strong>
+                        </td>
+                    </tr>";
     }
 }
-?>
-                        </tr>
-                    </tbody>
-                </table>
 
-                <br/>
-                <br/>
-                <br/>
 
-                <caption><h1 class='centrer'>Tableau récapitulatif des élèves</h1>
-                    <br/>
-                    <h3 class='centrer'><font color='red'>Nombre d'inscrits: <?php echo $nbeleves ?> &nbsp;Nombre d'élèves validés: <?php echo $nbelevesV ?></font></h3></caption>
-<?php
-echo"<input type='hidden' name='login' value=$login></input>";
+#================== Inscrit et inscrit validé ==================
+// Requête pour le nombre d'élève inscrits
+$requete2 = "SELECT count(*) as nbeleves from PARTICIPANTS where INSCRIT='O' or INSCRIT='V';";
 
-// on récupère toutes les checkbox cochées
+// Execution de la requête2
+$resultats2 = $connexion->select($requete2);
+
+// Affection du nombre d'élèves inscrit dans une variable
+$nbeleves = $resultats2[0]['nbeleves'];
+
+
+// Requête pour le nombre d'élève inscrit et validé
+$requete2B = "SELECT count(*) as nbeleves from PARTICIPANTS where INSCRIT='O';";
+
+// Affection du nombre d'élèves inscrit et validés dans une variable
+$resultats2B = $connexion->select($requete2B);
+
+// Affection du nombre d'élèves inscrit et validés dans une variable
+$nbelevesV = $resultats2B[0]['nbeleves'];
+
+
+#================== Tableau de validation des élèves ==================
+// Input cacher pour garder le login de l'élève
+$table_validation = "<input type='hidden' name='login' value=$login>";
+
+// Si le formulaire à été envoyer on recupere les checkboxes sinon c'est vide
 $checkboxes = isset($_POST['inscription']) ? $_POST['inscription'] : array();
-// Initalisation des variables pour éviter qu'elles deviennent locales lors de leur déclaration
+
+// Initalisation des variables
 $requete = '';
 $requete2 = '';
 /* $sauveclasse = ''; */
 
-foreach ($checkboxes as $value) {
-    $requete = "UPDATE PARTICIPANTS set INSCRIT = 'O', AUTORISATION = 'O', DROIT_IMAGE = 'O' where NO_PARTICIPANT = '" . $value . "'";
-    $inscription = $connexion->insert($requete);
-}
-$requete = "select NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE, PARTICIPANTS.INSCRIT,AUTORISATION,DROIT_IMAGE from PARTICIPANTS
-									inner join CLASSE on PARTICIPANTS.ID_CLASSE = CLASSE.ID_CLASSE
-									where INSCRIT IN ('O','V','N')
-									order by PARTICIPANTS.ID_CLASSE , PARTICIPANTS.NOM";
-$requete2 = "select NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE, PARTICIPANTS.INSCRIT,AUTORISATION,DROIT_IMAGE from PARTICIPANTS
-									inner join CLASSE on PARTICIPANTS.ID_CLASSE = CLASSE.ID_CLASSE
-									inner join PROFESSEURS on CLASSE.LOGIN = PROFESSEURS.LOGIN
-									where INSCRIT IN ('O','V','N')
-									order by PARTICIPANTS.ID_CLASSE,
-                                    case INSCRIT
-                                    when 'O' then 1
-                                    when 'V' then 2
-                                    when 'N' then 3
-                                    end,
-                                    PARTICIPANTS.NOM";
+// Requête pour recuperer les informations des participants
+$requete = "SELECT NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE, PARTICIPANTS.INSCRIT,AUTORISATION,DROIT_IMAGE 
+            from PARTICIPANTS
+            inner join CLASSE on PARTICIPANTS.ID_CLASSE = CLASSE.ID_CLASSE
+            where INSCRIT IN ('O','V','N')
+            order by PARTICIPANTS.ID_CLASSE , PARTICIPANTS.NOM";
+
+// Execution de la requête
 $resultats = $connexion->select($requete);
-// Stockage des valeurs du tableau une fois trié
-$resultats2 = $connexion->select($requete2);
+
+// Si le nombre de resultats et different de 0
 if (count($resultats) != 0) {
     // Récupération de la première classe
     $sauveclasse = $resultats[0]['ID_CLASSE'];
-    // Pour les terminales
+    // Initialisation des variables
     $cpt = 0;
-    echo "<ul class='collapsible' data-collapsible='accordion'>
+
+    // Affichage du tableau de validation des élèves
+    $table_validation .= "<ul class='collapsible' data-collapsible='accordion'>
                                 <li>
-                                    <div class='collapsible-header centrer'>$sauveclasse</div>
+                                    <div class='collapsible-header centrer'>
+                                        $sauveclasse
+                                    </div>
                                     <div class='collapsible-body'>
-                                    <table name='participants[]' class='centered'>
-                                    <thead>
-                                        <tr>
-                                            <th>Nom</th>
-                                            <th>Prénom</th>
-                                            <th>Classe</th>
-                                            <th>Inscription</th>
-                                            <th>Autorisation</th>
-                                            <th>Droit à l'image</th>
-                                           <th>Validation</th>
-                                        </tr>
-                                    </thead>
-                                <tbody>";
+                                        <table name='participants[]' class='centered'>
+                                            <thead>
+                                                <tr>
+                                                    <th>Nom</th>
+                                                    <th>Prénom</th>
+                                                    <th>Classe</th>
+                                                    <th>Inscription</th>
+                                                    <th>Autorisation</th>
+                                                    <th>Droit à l'image</th>
+                                                   <th>Validation</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>";
+
+    // Pour chaque résultat de la requête
     foreach ($resultats as $tab_eleve) {
+        // On a ajoute 1 au compteur à chaque tour
         $cpt += 1;
+
+        // Si la classe est differente de la classe en cours
         if ($tab_eleve['ID_CLASSE'] <> $sauveclasse) {
+            // Initialisation des variable
             $sauveclasse = $tab_eleve['ID_CLASSE'];
-            echo "</div></tbody></table></li>
+
+            // Affichage du tableau de validation des élèves
+            $table_validation .= "
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </li>
                                 <li>
-                                    <div class='collapsible-header centrer'>$sauveclasse</div>
+                                    <div class='collapsible-header centrer'>
+                                        $sauveclasse
+                                    </div>
                                     <div class='collapsible-body'>
-                                    <table name='participants[]' class='centered'>
-                                    <thead>
-                                        <tr>
-                                            <th>Nom</th>
-                                            <th>Prénom</th>
-                                            <th>Classe</th>
-                                            <th>Inscription </th>
-                                            <th>Autorisation</th>
-                                            <th>Droit à l'image</th>
-                                            <th>Validation</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>";
+                                        <table name='participants[]' class='centered'>
+                                            <thead>
+                                                <tr>
+                                                    <th>Nom</th>
+                                                    <th>Prénom</th>
+                                                    <th>Classe</th>
+                                                    <th>Inscription </th>
+                                                    <th>Autorisation</th>
+                                                    <th>Droit à l'image</th>
+                                                    <th>Validation</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>";
         }
+
+        // Si l'élève est inscrit et déjà valider on coche la case et on la bloque
         $checked = ($tab_eleve['INSCRIT'] == 'O') ? "disabled checked" : "";
+
+        // Si l'élève est inscrit et valide la couleur de fond de sa ligne est vert, si il est inscrit mais non validé le fond de sa ligne sera rouge sinon il restera blanc
         $color = ($tab_eleve['INSCRIT'] == 'O') ? "class='val'" : (($tab_eleve['INSCRIT'] == 'V') ? "class='non-val'" : "");
-        echo "<tr><td $color>", $tab_eleve['NOM'], "</td><td $color>", $tab_eleve['PRENOM'], "</td><td $color>", $tab_eleve['ID_CLASSE'], "</td><td $color>", $tab_eleve['INSCRIT'], "</td><td $color>", $tab_eleve['AUTORISATION'], "</td><td $color>", $tab_eleve['DROIT_IMAGE'], "</td><td $color><input type='checkbox' class='filled-in' id='filled-in-box" . $cpt . "' name='inscription[]' value=" . $tab_eleve["NO_PARTICIPANT"] . " style='visibility:hidden' " . $checked . "><label for='filled-in-box" . $cpt . "'></label></td></tr>";
+
+        // Affichage du tableau de validation des élèves
+        $table_validation .= "
+                                                <tr>
+                                                    <td $color>" . $tab_eleve['NOM'] . "</td>
+                                                    <td $color>" . $tab_eleve['PRENOM'] . "</td>
+                                                    <td $color>" . $tab_eleve['ID_CLASSE'] . "</td>
+                                                    <td $color>" . $tab_eleve['INSCRIT'] . "</td>
+                                                    <td $color>" . $tab_eleve['AUTORISATION'] . "</td>
+                                                    <td $color>" . $tab_eleve['DROIT_IMAGE'] . "</td>
+                                                    <td $color><input type='checkbox' class='filled-in' id='filled-in-box" . $cpt . "' name='inscription[]' value=" . $tab_eleve["NO_PARTICIPANT"] . " style='visibility:hidden' " . $checked . "><label for='filled-in-box" . $cpt . "'></label></td>
+                                                </tr>";
     }
-    echo "</tbody></table></li>";
+    // Affichage du tableau de validation des élèves
+    $table_validation .= "                      
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </li>
+                            </ul>";
 }
+
+
+
+
+
+
+
+// Requête pour permettre de trié les classe avec le bouton trier la classe
+$requete2 = "SELECT NO_PARTICIPANT,PARTICIPANTS.NOM,PARTICIPANTS.PRENOM,PARTICIPANTS.ID_CLASSE, PARTICIPANTS.INSCRIT,AUTORISATION,DROIT_IMAGE 
+            from PARTICIPANTSCLASSE
+            inner join CLASSE on PARTICIPANTS.ID_CLASSE = CLASSE.ID_CLASSE
+            inner join PROFESSEURS on CLASSE.LOGIN = PROFESSEURS.LOGIN
+            where INSCRIT IN ('O','V','N')
+            order by PARTICIPANTS.ID_CLASSE,
+            case INSCRIT
+            when 'O' then 1
+            when 'V' then 2
+            when 'N' then 3
+            end,
+            PARTICIPANTS.NOM";
+
+// Execution de la requête
+$resultats2 = $connexion->select($requete2);
 // Traitement du tableau des résultats triés
 $i = 0;
 $cpt = 0;
@@ -198,11 +284,39 @@ for ($k = 0; $k <= $i; $k++) {
     foreach ($tabTri[$k] as $ligne) {
         $tmp .= $ligne;
     }
-    echo "<table class='display' name='tableauTri'><tbody>" . $tmp . "</tbody></table>";
+    $table_validation .= "<table class='display' name='tableauTri'><tbody>" . $tmp . "</tbody></table>";
 }
 ?>
 
-                </ul>
+<body>
+    <div class="main">
+        <!-- =================== Menu =================== -->
+        <?php include("../include/nav.php") ?>
+        <div>
+            <center>
+                <h1>Tableau récapitulatif du nombre d'inscrits</h1>
+            </center>
+            <form method="post" action="taborg_val.php?login=<?= $login ?>" id='form'>
+                <table class='centered'>
+                    <thead>
+                        <tr>
+                            <th>Classe</th>
+                            <th>Nombre d'inscrits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?= $table_nbparticipants ?>
+                    </tbody>
+                </table>
+
+                <br>
+                <br>
+
+                <caption><h1 class='centrer'>Tableau récapitulatif des élèves</h1>
+                    <br/>
+                    <h4 class='centrer'><font color='red'>Nombre d'inscrits: <?php echo $nbeleves ?> &nbsp;Nombre d'élèves validés: <?php echo $nbelevesV ?></font></h4></caption>
+
+                <?= $table_validation ?>
                 </center>
                 <br/>
                 <br/>
@@ -214,8 +328,9 @@ for ($k = 0; $k <= $i; $k++) {
         </div>
     </form>
 
-    <!--==============================footer=================================-->
-                <?php include("../include/footer.php") ?>
+    <!-- =================== Footer =================== -->
+    <?php include("../include/footer.php") ?>
+
 
     <script>
         $(document).ready(function ()
